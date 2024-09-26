@@ -85,7 +85,7 @@ aws ssm delete-parameter --name "$token_path"/"$instance_id" --region "$region"
 
 if [ -z "$run_as" ]; then
   echo "No user specified, using default ec2-user account"
-  run_as="ec2-user"
+  run_as="ubuntu"
 fi
 
 if [[ "$run_as" == "root" ]]; then

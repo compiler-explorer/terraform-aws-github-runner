@@ -117,11 +117,12 @@ resource "aws_launch_template" "runner" {
   instance_initiated_shutdown_behavior = "terminate"
   image_id                             = data.aws_ami.runner.id
   key_name                             = var.key_name
+  ebs_optimized                        = var.ebs_optimized
 
-  vpc_security_group_ids = compact(concat(
+  vpc_security_group_ids = !var.associate_public_ipv4_address ? compact(concat(
     var.enable_managed_runner_security_group ? [aws_security_group.runner_sg[0].id] : [],
     var.runner_additional_security_group_ids,
-  ))
+  )) : []
 
   tag_specifications {
     resource_type = "instance"
@@ -175,6 +176,18 @@ resource "aws_launch_template" "runner" {
   tags = local.tags
 
   update_default_version = true
+
+  dynamic "network_interfaces" {
+    for_each = var.associate_public_ipv4_address ? [var.associate_public_ipv4_address] : []
+    iterator = associate_public_ipv4_address
+    content {
+      associate_public_ip_address = associate_public_ipv4_address.value
+      security_groups = compact(concat(
+        var.enable_managed_runner_security_group ? [aws_security_group.runner_sg[0].id] : [],
+        var.runner_additional_security_group_ids,
+      ))
+    }
+  }
 }
 
 resource "aws_security_group" "runner_sg" {
@@ -183,6 +196,8 @@ resource "aws_security_group" "runner_sg" {
   description = "Github Actions Runner security group"
 
   vpc_id = var.vpc_id
+
+  ingress = []
 
   dynamic "egress" {
     for_each = var.egress_rules

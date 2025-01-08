@@ -43,7 +43,7 @@ variable "instance_type" {
 }
 
 variable "iam_instance_profile" {
-  description = "IAM instance profile for the builder to run as"
+  description = "The IAM instance profile to run the builder as"
   type        = string
   default     = ""
 }

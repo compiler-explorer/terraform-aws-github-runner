@@ -47,7 +47,7 @@ echo OS: $os_id
 
 # Install libicu60 for arm64 on non-ubuntu
 if [[ "$architecture" == "arm64" ]] && [[ ! "$os_id" =~ ^ubuntu.* ]]; then
-  apt install -y libicu60
+  yum install -y libicu60
 fi
 
 # Install dependencies for ubuntu

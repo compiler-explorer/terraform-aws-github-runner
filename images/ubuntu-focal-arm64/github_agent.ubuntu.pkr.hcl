@@ -42,6 +42,12 @@ variable "instance_type" {
   default     = "t3.medium"
 }
 
+variable "iam_instance_profile" {
+  description = "IAM instance profile for the builder to run as"
+  type        = string
+  default     = ""
+}
+
 variable "root_volume_size_gb" {
   type    = number
   default = 8
@@ -95,12 +101,6 @@ locals {
   runner_version = coalesce(var.runner_version, trimprefix(jsondecode(data.http.github_runner_release_json.body).tag_name, "v"))
 }
 
-variable "instance_profile" {
-  description = "IAM instance profile for the builder to run as"
-  type        = string
-  default     = ""
-}
-
 source "amazon-ebs" "githubrunner" {
   ami_name                                  = "github-runner-ubuntu-focal-arm64-${formatdate("YYYYMMDDhhmm", timestamp())}"
   instance_type                             = var.instance_type
@@ -109,6 +109,7 @@ source "amazon-ebs" "githubrunner" {
   subnet_id                                 = var.subnet_id
   associate_public_ip_address               = var.associate_public_ip_address
   temporary_security_group_source_public_ip = var.temporary_security_group_source_public_ip
+  iam_instance_profile                      = var.iam_instance_profile
 
   source_ami_filter {
     filters = {
@@ -119,7 +120,6 @@ source "amazon-ebs" "githubrunner" {
     most_recent = true
     owners      = ["099720109477"]
   }
-  iam_instance_profile = var.instance_profile
   ssh_username = "ubuntu"
   tags = merge(
     var.global_tags,
